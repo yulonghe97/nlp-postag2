@@ -14,7 +14,7 @@ const POStag = ['CC','CD','DT','EX','FW','IN','JJ','JJR','JJS','LS','MD','NN','N
 const [TOKEN, TAG] = [0,1];
 
 // Two tables of frequency
-let POStable = {}, STATEtable = {'Begin_Sent':{},'End_Sent':{}};
+let POStable = {}, STATEtable = {'Begin_Sent':{},'End_Sent':{}}, POStableProb = {}, STATEtableProb = {};
 
 // Initialize the POStable based on the POStag
 POStag.forEach(e => POStable[e] = {});
@@ -48,7 +48,6 @@ function countState(current, prevState) {
 }
 
 function increaseCount(table, currentState, prev) {
-
     if(isNaN(table[currentState][prev])){
         table[currentState][prev]=0;
         table[currentState][prev]++;
@@ -70,7 +69,7 @@ function calculateProbability(table) {
     Object.values(table).forEach(tag => {
         // push every value in that object into a temp array for sum calculation
         Object.values(tag).forEach(frequency => tempArry.push(frequency));
-        if (tempArry.length > 1){
+        if (tempArry.length > 0){
             sum.push(tempArry.reduce((previousValue, currentValue) => previousValue + currentValue));
             tempArry.length = 0;
         }else {
@@ -85,8 +84,66 @@ function calculateProbability(table) {
          });
          counter++;
     });
+
     console.log(sum);
     return newTable;
+}
+
+// 1. first we want to look up for the probability that the word exists in different state. (word observation probability)
+// 2. second we want to find the probability of that state follow by the previous state (transition probability)
+// 3. calculate the observation probability and transition probability.
+// 4. choose the highest probability path until that state.
+// 5. do the process recursively until we reach the end of sentence.
+
+function tagSentence(sentence) {
+
+    // Initialize the previous state as 'Begin_Sent'.
+    let prevState = 'Begin_Sent';
+    // Initialize the tag sequence as an object to record the tagging sequence for the sentence.
+    const tagSeq = {};
+
+    //loop through the sentence, find the word
+    sentence.forEach(word => {
+
+        const wordProb = [];
+
+        //look over the table, find the word and its probability. Put the tag:probability into a 2D-array.
+        Object.entries(POStableProb).forEach(tag => {
+            Object.entries(tag[1]).forEach(prob => {
+                if(prob[0] === word) wordProb.push([tag[0],prob[1]]);
+            });
+        });
+
+        // After we created the table, we want to look the probability of that state follow by the previous state.
+        for(let i=0; i<wordProb.length; i++) {
+            Object.entries(STATEtableProb).forEach(state =>{
+                if(state[0] === prevState){
+                    Object.entries(state[1]).forEach(followState =>{
+                        // Calculate word probability * transition probability and put back to the array.
+                        if(followState[0] === wordProb[i][0]) wordProb[i][1] = followState[1]*wordProb[i][1];
+                    });
+                }
+            });
+        }
+
+        // Now we want to ge the highest probability for this word. Assume the max is the first one.
+        let [maxState,maxProb] = [wordProb[0][0],wordProb[0][1]];
+        wordProb.forEach(e => {
+            if(e[1] > maxProb){
+                maxProb = e[1];
+                maxState = e[0];
+            }
+        });
+
+        console.log(wordProb);
+        console.log(`MAX is ${[maxState,maxProb]}`);
+        tagSeq[word] = maxState;
+        prevState = maxState;
+
+    });
+
+    return tagSeq;
+
 }
 
 function processFile(inputFile) {
@@ -105,12 +162,12 @@ function processFile(inputFile) {
     });
 
     rl.on('close', function (line) {
-        fs.writeFileSync('src/POStable.json',JSON.stringify(POStable,null,' '));
-        fs.writeFileSync('src/Statetable.json',JSON.stringify(STATEtable,null,' '));
-        const table = calculateProbability(POStable);
-        const table2 = calculateProbability(STATEtable);
-        fs.writeFileSync('src/POStable2.json',JSON.stringify(table,null,' '));
-        fs.writeFileSync('src/Statetable2.json',JSON.stringify(table2,null,' '));
+        POStableProb = calculateProbability(POStable);
+        STATEtableProb = calculateProbability(STATEtable);
+        // fs.writeFileSync('src/POStable2.json',JSON.stringify(POStableProb,null,' '));
+        // fs.writeFileSync('src/Statetable2.json',JSON.stringify(STATEtableProb,null,' '));
+        console.log(tagSentence(['The', 'orange','is','on','the','table']));
+
     });
 
 }
