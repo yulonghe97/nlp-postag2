@@ -43,7 +43,7 @@ The basic structure of this program is:
 
 5. Do the same process as above, calculate the probability and put that into a hash-table.
 
-Step 1-5 are done within the functions:
+   Step 1-5 are done within the functions:
 
 ```bash
     ├── countPOS
@@ -64,7 +64,7 @@ Step 1-5 are done within the functions:
 
 8. return the tagged sequence as a 2D-array.
 
-Step 6-8, including OOV handling, are done within the funcitons:
+   Step 6-8, including OOV handling, are done within the funcitons:
 
 ```bash
   ├── tagSequence
@@ -76,5 +76,5 @@ OOV Case Handling:
 - This program handles the OOV case by:
 	- assume the likelihood probability as 1/1000 for all OOV items.
 	- choose the highest previous state as the major criteria to tag the word.
-	- for example, if the previous state is DT, and we find CC has the highest probability followed by the DT, we will choose CC as the tag for that word.
+	- for example, if the previous state is DT, and we find CC has the highest probability followed by the DT, we will 	     choose CC as the tag for that word.
 
