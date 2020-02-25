@@ -108,14 +108,12 @@ function tagSentence(sentence) {
         let OOV = false;
 
         //look over the table, find the word and its probability. Put the tag:probability into a 2D-array.
-        Object.entries(POStableProb).forEach(tag => {
-            Object.entries(tag[1]).forEach(prob => {
-                if(prob[0] === word){
-                    // If we find the word from table, push it to the word list. Otherwise, deem this word as an OOV.
-                    wordProb.push([tag[0],prob[1]]);
-                }
-            });
-        });
+
+       Object.entries(POStableProb).forEach(tag => {
+          if(tag[1].hasOwnProperty(word)){
+              wordProb.push([tag[0],tag[1][word]]);         // tag[0] as the tag, tag[word][1] as the probability.
+          }
+       });
 
         if (wordProb.length === 0) (OOV = true);
 
@@ -132,8 +130,10 @@ function tagSentence(sentence) {
                     })
                 }
             });
+
             tagSeq.push([word,maxState]);
             prevState = maxState;
+
         }else {
             // After we created the table, we want to look the probability of that state follow by the previous state.
             for(let i=0; i<wordProb.length; i++) {
@@ -209,6 +209,7 @@ function processFile() {
         STATEtableProb = calculateProbability(STATEtable);
         console.log(`Finished Training Table Calculation`);
         console.log(`Tagging Corpus...`);
+
         wholeCorpus.forEach(sentence => {
             const tagged_sentence = tagSentence(sentence);
             tagged_sentence.forEach(word => {

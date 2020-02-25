@@ -5,6 +5,10 @@
 @Date: 2020.02.04 <br>
 
 
+
+
+
+
 This NLP HMM POS tagging program is used to tag the corpus based on the PENN Tree Bank corpus. It is written in javascript and to run this program, you will need to install Node.js
 
 To run this program, type the following in console:
@@ -31,16 +35,19 @@ Please check if your root directory has the following tree structure:
 The basic structure of this program is:
 
 1. Read the traning file and extract the frequency of each word tagged in that tag.
-	- (eg. 'CC': 'Apple': 15) this means that Apple is tagged 15 times as CC.
-
+	
+- (eg. 'CC': 'Apple': 15) this means that Apple is tagged 15 times as CC.
+	
 2. Create a hashtable to record the word frequency from previous extraction.
 
 3. Calculate proability of the word within that tag and store that in the hash-table.
-	- (eg. 'CC':'Apple':0.5 if total count of CC is 30)
-
+	
+- (eg. 'CC':'Apple':0.5 if total count of CC is 30)
+	
 4. Again, read the training file but this time count the frequency of each state occurs after a specific state
-	- (eg. 'DT': 'CC': 1000) This means that the frequency of DT followed by CC is 1000
-
+	
+- (eg. 'DT': 'CC': 1000) This means that the frequency of DT followed by CC is 1000
+	
 5. Do the same process as above, calculate the probability and put that into a hash-table.
 
    Step 1-5 are done within the functions:
